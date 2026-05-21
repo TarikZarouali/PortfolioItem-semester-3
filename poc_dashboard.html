@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoC – AI vs Traditionele Netwerkmonitoring</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Data laden...</p>
+  </div>
+
+  <div class="header" id="content" style="display:none">
+    <div class="badge">PROOF OF CONCEPT · SPRINT 7</div>
+    <h1>AI vs <span>Traditionele</span><br>Netwerkmonitoring</h1>
+    <p class="subtitle">Tarik Zarouali · Hogeschool Utrecht · HBO ICT · 2025</p>
+  </div>
+
+  <div class="main" id="main" style="display:none">
+
+    <div class="section-title">Dataset overzicht</div>
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">Totaal verbindingen</div>
+        <div class="stat-value" id="s-totaal">–</div>
+        <div class="stat-sub">NetFlow records</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Normaal verkeer</div>
+        <div class="stat-value" id="s-normaal">–</div>
+        <div class="stat-sub" id="s-normaal-pct">–</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Aanvallen</div>
+        <div class="stat-value" id="s-aanvallen">–</div>
+        <div class="stat-sub" id="s-aanval-pct">–</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">AI detecteerde meer</div>
+        <div class="stat-value" id="s-verbetering">–</div>
+        <div class="stat-sub">aanvallen vs traditioneel</div>
+      </div>
+    </div>
+
+    <div class="section-title">Detectie vergelijking</div>
+    <div class="comparison">
+      <div class="method">
+        <div class="method-header">
+          <span class="method-name">🟠 Traditionele monitoring (drempelwaarde)</span>
+          <span class="method-pct" style="color:var(--orange)" id="trad-pct">–</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="trad-bar" style="width:0%;background:var(--orange)"></div>
+        </div>
+        <div class="detail-row">
+          <span>✅ Gevonden: <span id="trad-gevonden">–</span></span>
+          <span>❌ Gemist: <span id="trad-gemist">–</span></span>
+          <span>⚠️ Vals alarm: <span id="trad-vals">–</span></span>
+        </div>
+      </div>
+      <div class="method">
+        <div class="method-header">
+          <span class="method-name">🔵 AI detectie (Isolation Forest)</span>
+          <span class="method-pct" style="color:var(--blue)" id="ai-pct">–</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" id="ai-bar" style="width:0%;background:var(--blue)"></div>
+        </div>
+        <div class="detail-row">
+          <span>✅ Gevonden: <span id="ai-gevonden">–</span></span>
+          <span>❌ Gemist: <span id="ai-gemist">–</span></span>
+          <span>⚠️ Vals alarm: <span id="ai-vals">–</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Grafieken</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Aanvallen gedetecteerd</h3>
+        <img id="chart1" src="" alt="Vergelijking">
+      </div>
+      <div class="chart-card">
+        <h3>Per aanvalstype</h3>
+        <img id="chart2" src="" alt="Per type">
+      </div>
+      <div class="chart-card">
+        <h3>Dataset verdeling</h3>
+        <img id="chart3" src="" alt="Verdeling">
+      </div>
+    </div>
+
+    <div class="section-title">Conclusie</div>
+    <div class="conclusion">
+      <h2>Wat bewijst deze PoC?</h2>
+      <p id="conclusie-tekst"></p>
+    </div>
+
+    <div class="footer">
+      Tarik Zarouali · 1890783 · Hogeschool Utrecht · Dataset: NF-CSE-CIC-IDS2018-v2
+    </div>
+
+  </div>
+
+  <script>
+    function fmt(n) { return Number(n).toLocaleString('nl-NL'); }
+
+    fetch('poc_data.json')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('s-totaal').textContent      = fmt(d.totaal);
+        document.getElementById('s-normaal').textContent     = fmt(d.normaal);
+        document.getElementById('s-normaal-pct').textContent = d.normaal_pct + '% van totaal';
+        document.getElementById('s-aanvallen').textContent   = fmt(d.aanvallen);
+        document.getElementById('s-aanval-pct').textContent  = d.aanval_pct + '% van totaal';
+        document.getElementById('s-verbetering').textContent = '+' + fmt(d.verbetering);
+
+        document.getElementById('trad-pct').textContent      = d.trad_pct + '%';
+        document.getElementById('trad-bar').style.width      = d.trad_pct + '%';
+        document.getElementById('trad-gevonden').textContent = fmt(d.trad_gevonden);
+        document.getElementById('trad-gemist').textContent   = fmt(d.trad_gemist);
+        document.getElementById('trad-vals').textContent     = fmt(d.trad_vals);
+
+        document.getElementById('ai-pct').textContent        = d.ai_pct + '%';
+        document.getElementById('ai-bar').style.width        = d.ai_pct + '%';
+        document.getElementById('ai-gevonden').textContent   = fmt(d.ai_gevonden);
+        document.getElementById('ai-gemist').textContent     = fmt(d.ai_gemist);
+        document.getElementById('ai-vals').textContent       = fmt(d.ai_vals);
+
+        document.getElementById('chart1').src = 'data:image/png;base64,' + d.chart1;
+        document.getElementById('chart2').src = 'data:image/png;base64,' + d.chart2;
+        document.getElementById('chart3').src = 'data:image/png;base64,' + d.chart3;
+
+        document.getElementById('conclusie-tekst').innerHTML =
+          `Dit experiment toont aan dat <strong>AI ${d.factor}x meer aanvallen detecteert</strong> dan traditionele drempelwaarde-monitoring.
+          Traditionele monitoring kijkt slechts naar <strong>één variabele</strong> (pakketgrootte) en mist daardoor
+          <strong>${fmt(d.trad_gemist)} van de ${fmt(d.aanvallen)} aanvallen</strong>.
+          De AI analyseert <strong>9 variabelen tegelijk</strong> en herkent complexe patronen die traditionele monitoring niet oppikt.
+          Dit sluit direct aan op de bevindingen in het rapport over <strong>Cisco AI, Juniper/HPE en Aruba AIOps</strong> —
+          die allen gebruikmaken van vergelijkbare multi-variabele patroonherkenning.`;
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+        document.getElementById('main').style.display    = 'block';
+      })
+      .catch(() => {
+        document.getElementById('loading').innerHTML =
+          '<p style="color:#e74c3c;font-family:monospace;text-align:center">❌ poc_data.json niet gevonden.<br><br>Draai eerst het Python script!</p>';
+      });
+  </script>
+
+</body>
+</html>
